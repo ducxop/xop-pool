@@ -1,0 +1,19 @@
+{
+  "name": "xop-pool",
+  "version": "1.0.0",
+  "scripts": {
+    "client": "cd client && yarn start",
+    "server": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
+    "start": "node server.js && cd client && react-scripts start"
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "meshblu-xmpp": "^1.4.5",
+    "mongodb": "^3.0.10",
+    "node-binance-api": "^0.6.0"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.0"
+  }
+}
