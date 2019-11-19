@@ -122,26 +122,46 @@ class MessageView extends React.Component {
   }
   
   handleClick = async () => {
-    var postData = {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({uuid: this.state.uuid, token: this.state.token})
+    // var postData = {
+    //   method: 'POST',
+    //   headers: {
+    //     'Accept': 'application/json',
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({uuid: this.state.uuid, token: this.state.token})
+    // }
+    function cb(ans)
+    {
+      if (ans || (!ans && (!this.state.isLogin))){
+        if (!this.state.isLogin) this.setState({mess:[]})
+        this.setState(prevState => ({
+          isLogin: !prevState.isLogin
+        }))
+      }
     }
-    var response = this.state.isLogin?await fetch("/api/login",postData)
-                                     :await fetch("/api/logout",postData)
+    var ccb = cb.bind(this)
+    this.state.isLogin?await socket.emit("login", {uuid: this.state.uuid, token: this.state.token}, ccb) //(ans)=>{response=ans; alert(ans)}) //await fetch("/api/login",postData)
+                      :await socket.emit("logout", {uuid: this.state.uuid, token: this.state.token}, ccb) //(ans)=>{response=ans; alert(ans)})
+    // if (response){
+    //   if (!this.state.isLogin) this.setState({mess:[]})
+    //   this.setState(prevState => ({
+    //     isLogin: !prevState.isLogin
+    //   }))
+    // }
+    
+    
+    //alert('res',response)cd app
+
     //const body = await response.json();
-    if (response.status == 200) {
-      alert(response.status)
-      if (!this.state.isLogin) this.setState({mess:[]})
-      this.setState(prevState => ({
-        isLogin: !prevState.isLogin
-      }));
-    }
-    else
-      alert(response.status)
+    // if (response.status == 200) {
+    //   alert(response.status)
+    //   if (!this.state.isLogin) this.setState({mess:[]})
+    //   this.setState(prevState => ({
+    //     isLogin: !prevState.isLogin
+    //   }));
+    // }
+    // else
+    //   alert(response.status)
   }
   
   onChange = (e) => {

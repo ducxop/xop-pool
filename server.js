@@ -37,8 +37,46 @@ conn.connect(function(error){
   if (error) {
     console.log(error)
   }
-  console.log('connected')
+  console.log('sender connected')
 })
+
+// var conn2 = new Meshbu(config20)
+// conn2.on('message',(ms)=>{
+//   console.log('### Conn2: ', ms.data.payload)  
+//   if (typeof ms.data.payload == 'string'){
+//     console.log('emit-ing...')
+//     socket.emit('message', ms.data.payload)
+//     //socket.broadcast.emit('message', ms.data.payload)
+//   }
+// })
+// logout = (client,cb)=>{
+//   if(conn2.connection !== undefined){
+//     conn2.close()
+//   }
+//   cb(true)
+// }
+// login = (client,cb)=>{
+//   config = {
+//     hostname: '192.168.105.222',
+//     port: 5222,
+//     token: client.token, 
+//     uuid: client.uuid
+//   }  
+//   conn2 = new Meshbu(config)
+//   conn2.connect(err=>{
+//     console.log('login ')
+//   })
+//   conn2.on('message',(ms)=>{
+//     console.log('#-ReceivE-#: ', ms.data.payload)  
+//     if (typeof ms.data.payload == 'string'){
+//       //console.log('emit-ing...')
+//       //socket.emit('message', ms.data.payload)
+//       //socket.broadcast.emit('message', ms.data.payload)
+//     }
+//   })
+//   cb(true)
+// }
+
 //var http = require('http')
 const server = require('http').Server(app);
 var io = require('socket.io').listen(server)
@@ -47,14 +85,13 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
-
 io.sockets.on('connection', (socket)=>{
     console.log('a client is connected')
     //socket.emit('message', 'emit message')
     socket.on('send',(msg)=>{
       console.log('on send')
       let message = {
-        "devices": config20.uuid,
+        "devices": [config10.uuid,config20.uuid],
         "payload": msg
       };
       conn.message(message, err=>{
@@ -68,14 +105,68 @@ io.sockets.on('connection', (socket)=>{
       if (socket.conn2) socket.conn2.close()
     })
     
-    app.post('/api/login', (req,res)=>{
-      if (clients.indexOf(req.body.uuid)<0){
-        clients.push(req.body.uuid)
+    socket.on('login', (client, cb)=>{    
+      
+      //console.log('client in ',client)
+      if (clients.indexOf(client.uuid)<0){
+        clients.push(client.uuid)
         socket.config = {
           hostname: '192.168.105.222',
           port: 5222,
-          token: req.body.token, 
-          uuid: req.body.uuid
+          token: client.token, 
+          uuid: client.uuid
+        }
+        socket.conn2 = new Meshbu(socket.config)
+        socket.conn2.connect(err=>{
+          console.log('login ')
+          socket.conn2.claimOfflineMessages(socket.config.uuid, function(error) {
+            if (error) {
+                console.log(error);
+            }
+          })
+        })
+        socket.conn2.on('message',(ms)=>{
+          console.log('### RECEIVE: ', ms.data.payload)  
+          socket.conn2.updateMessageStatus(socket.config.uuid, ms.data.id, 1, function(error){
+            console.log("update message status: " + ms.data.id)
+            if (error) {
+                console.log(error);
+            }
+        });
+          if (typeof ms.data.payload == 'string'){
+            console.log('emit-ing...')
+            socket.emit('message', ms.data.payload)
+            //socket.broadcast.emit('message', ms.data.payload)
+          }
+        })
+        cb(true)
+      }
+      else
+        cb(false)
+    })
+
+    socket.on('logout', (client, cb)=>{
+      //console.log('client out',client)
+      //console.log(socket.config.uuid)
+      //if (socket.config.uuid == client.uuid){
+      var index = clients.indexOf(client.uuid);
+      if (index>=0){
+        clients.splice(index, 1);
+        console.log('logout ',client.uuid)
+        socket.conn2.close()
+        cb(true)
+      }
+      else
+       cb(false)
+    })
+    app.post('/api/login_', (req,res)=>{
+      if (clients.indexOf(client.uuid)<0){
+        clients.push(client.uuid)
+        socket.config = {
+          hostname: '192.168.105.222',
+          port: 5222,
+          token: client.token, 
+          uuid: client.uuid
         }
         socket.conn2 = new Meshbu(socket.config)
         socket.conn2.connect(err=>{
@@ -87,7 +178,7 @@ io.sockets.on('connection', (socket)=>{
           if (typeof ms.data.payload == 'string'){
             console.log('emit-ing...')
             socket.emit('message', ms.data.payload)
-            socket.broadcast.emit('message', ms.data.payload)
+            //socket.broadcast.emit('message', ms.data.payload)
           }
         })
         res.status(200)
@@ -97,7 +188,7 @@ io.sockets.on('connection', (socket)=>{
       res.end()
       
     })
-    app.post('/api/logout', (req,res)=>{
+    app.post('/api/logout_', (req,res)=>{
       console.log(socket.config.uuid)
       if (socket.config.uuid == req.body.uuid){
         var index = clients.indexOf(req.body.uuid);
@@ -114,37 +205,6 @@ io.sockets.on('connection', (socket)=>{
 })
 //server.listen(8080)
  
-/////////////////////////////////////
- 
-//////////////////////////////////
-// app.get('/api/send', (req,res)=>{
-//   let message = {
-//     "devices": config2.uuid,
-//     "payload": "message no. " + ++count
-//   };
-//   conn.message(message, err=>{
-//     if (err) {
-//       res.status(202)
-//       res.end('')
-//     }
-//     console.log("sent",count)
-//     setTimeout(()=>{
-//       if (mess.length>0)
-//         res.send({mes: mess})
-//       else
-//         res.end('')
-//     },100)
-//   })
-// })
-// app.get('/api/get',(req,res)=>{
-//   if (mess.length>0)
-//     res.send({mes: mess})
-//   else
-//     res.status(204)
-//     res.end('')
-//   mess = []
-// })
-
 app.get('/api/hello', (req, res) => {
   res.send({ express: 'Meshblu XMPP Testing' });
 });

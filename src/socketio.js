@@ -2,7 +2,7 @@ var http = require('http')
 var fs = require('fs')
 
 var server = http.createServer((req,res)=>{
-    fs.readFile('./index.html', 'utf-8', (error, content)=>{
+    fs.readFile('./socketio.html', 'utf-8', (error, content)=>{
         res.writeHead(200,{"Content-Type":"text/html"})
         res.end(content)
     })

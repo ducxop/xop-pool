@@ -51,11 +51,11 @@ exports.getJsons = async (links,callback)=>{
     })
 }
 
-// const querystring = require('querystring')
-// const postData = querystring.stringify({
+
+// const postData = JSON.stringify({
 //     "targetType":"device",
 //     "pushProfile":"push profile 1",
-//     "targets":"1102e314-4417-41e9-9caf-fc0c59004109",
+//     "targets":["1102e314-4417-41e9-9caf-fc0c59004109"],
 //     "payload":"msg from https req",
 //     "priority":0,
 //     "expirationDate":"2018-05-27 23:59:59"
