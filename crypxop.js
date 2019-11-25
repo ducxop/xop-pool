@@ -3,13 +3,12 @@ var getJson = require('./src/http-req.js').getJson
 var getJsons = require('./src/http-req.js').getJsons
 var apiData = require('./krypxop.json')
 
-const binance = require('node-binance-api');
-binance.options({
-  APIKEY: apiData.key, //'eqnrZwXfZ2Hro7SrgLyC52u0YZl2XU2JfYbuUVftAu7hRQpkbQOAdIZyOvxvCc6J',
-  APISECRET: apiData.sec, //'5rAipPkAx79U3gQkaioJUmzK01OQy9OIEblozqMkLDcn0M0Kdg62rhNkbJslol4x',
-  useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
-  test: true // If you want to use sandbox mode where orders are simulated
-});
+const binance = require('node-binance-api')().options({
+    APIKEY: apiData.key, //'eqnrZwXfZ2Hro7SrgLyC52u0YZl2XU2JfYbuUVftAu7hRQpkbQOAdIZyOvxvCc6J',
+    APISECRET: apiData.sec, //'5rAipPkAx79U3gQkaioJUmzK01OQy9OIEblozqMkLDcn0M0Kdg62rhNkbJslol4x',
+    useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
+    test: true // If you want to use sandbox mode where orders are simulated
+  });
 // var quantity = 2, price = 1100;
 // binance.buy("BCCUSDT", quantity, price, {type:'LIMIT'}, (error, response) => {
 //   console.log("err", error)
@@ -88,13 +87,13 @@ var getData = ()=>{
     //   });
 }
 getData()
-var objItv = setInterval(getData, 2500)
+var objItv = setInterval(getData, 200)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //coinmarketcap
 
 onSigint(()=>{
-    //clearInterval(objItv)
+    clearInterval(objItv)
 })
 
 
